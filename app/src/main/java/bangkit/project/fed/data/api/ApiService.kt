@@ -29,9 +29,8 @@ interface ApiService {
     @Multipart
     @POST("predict")
     suspend fun uploadImagetoDetect(
-        @Part ("imageURL")image: File,
-        @Part("label") label: String,
+        @Part image: MultipartBody.Part,
         @Part("userId") userId: String,
-        @Part("timestamp") timeStamp: String,
+        @Part("label") label: String,
     ) : PredictResponse
 }

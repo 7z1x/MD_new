@@ -130,7 +130,7 @@ class ImageDisplayActivity : AppCompatActivity() {
             val apiService = ApiConfig.getApiService(uid)
 
             try {
-                apiService.uploadImagetoDetect(file, imageName, uid, formattedTimestamp)
+                apiService.uploadImagetoDetect(filePart, imageName, uid)
                 showToast("Image uploaded successfully.")
 
                 val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
