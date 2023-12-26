@@ -50,98 +50,103 @@ class ImageDisplayActivity : AppCompatActivity() {
         }
 
         binding.uploadButton.setOnClickListener {
-            uploadImageUsingFirestore()
+            uploadImage()
         }
         getImage()
     }
 
-    private fun uploadImageUsingFirestore() {
-        val userId = auth.currentUser?.uid.toString()
+//    private fun uploadImageUsingFirestore() {
+//        val userId = auth.currentUser?.uid.toString()
+//        val imageName = binding.photonameEd.text.toString().trim()
+//
+//        if (imageName.isEmpty()) {
+//            showToast(getString(R.string.empty_image_warning))
+//            return
+//        }
+//
+//        showLoading(true)
+//
+//        try {
+//            val uid = auth.currentUser?.uid.toString()
+//            val image = (binding.imageView.drawable as BitmapDrawable).bitmap
+//            val imageFile = convertBitmapToFile(image)
+//
+//            // Use a coroutine scope to call the suspend function
+//            lifecycleScope.launch {
+//                try {
+//                    // Attempt to upload the image and get the URL
+//                    val imageUrl = FirestoreHelper().uploadImage(imageFile, userId, imageName)
+//
+//                    // If successful, upload additional data
+//                    val detectionTimestamp = System.currentTimeMillis()
+//                    val formattedTimestamp = formatDate(detectionTimestamp)
+//                    FirestoreHelper().uploadDataEgg(formattedTimestamp, "", imageUrl, imageName, userId)
+//
+//                    // Show success message or perform other actions on success
+//                    showToast("Image uploaded successfully!")
+//                    val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
+//                    startActivity(intent)
+//                    finish()
+//
+//                } catch (e: Exception) {
+//                    // Handle errors
+//                    showToast("Error uploading image: ${e.message}")
+//                    e.printStackTrace()
+//                } finally {
+//                    // Ensure loading indicator is hidden
+//                    showLoading(false)
+//                }
+//            }
+//
+//        } catch (e: Exception) {
+//            // Handle other non-coroutine exceptions here
+//            showToast("Error: ${e.message}")
+//            e.printStackTrace()
+//            showLoading(false)
+//        }
+//    }
+
+
+    private fun uploadImage() {
         val imageName = binding.photonameEd.text.toString().trim()
 
         if (imageName.isEmpty()) {
             showToast(getString(R.string.empty_image_warning))
             return
         }
-
         showLoading(true)
-
-        try {
+        lifecycleScope.launch {
             val uid = auth.currentUser?.uid.toString()
+
             val image = (binding.imageView.drawable as BitmapDrawable).bitmap
-            val imageFile = convertBitmapToFile(image)
+            val file = convertBitmapToFile(image)
+            val requestFile = file.asRequestBody("multipart/form-data".toMediaType())
+            val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            Log.i("infoo", file.length().toString())
+            val detectionTimestamp = System.currentTimeMillis()
+            val formattedTimestamp = formatDate(detectionTimestamp)
 
-            // Use a coroutine scope to call the suspend function
-            lifecycleScope.launch {
-                try {
-                    // Attempt to upload the image and get the URL
-                    val imageUrl = FirestoreHelper().uploadImage(imageFile, userId, imageName)
 
-                    // If successful, upload additional data
-                    val detectionTimestamp = System.currentTimeMillis()
-                    val formattedTimestamp = formatDate(detectionTimestamp)
-                    FirestoreHelper().uploadDataEgg(formattedTimestamp, "", imageUrl, imageName, userId)
+            val apiService = ApiConfig.getApiService(uid)
 
-                    // Show success message or perform other actions on success
-                    showToast("Image uploaded successfully!")
-                    val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
+            try {
+                apiService.uploadImagetoDetect(file, imageName, uid, formattedTimestamp)
+                showToast("Image uploaded successfully.")
 
-                } catch (e: Exception) {
-                    // Handle errors
-                    showToast("Error uploading image: ${e.message}")
-                    e.printStackTrace()
-                } finally {
-                    // Ensure loading indicator is hidden
-                    showLoading(false)
-                }
+                val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+
+            } catch (e: Exception) {
+                showToast("Error uploading image: ${e.message}")
+                Log.e("UploadImage", "Error uploading image", e)
+            } finally {
+                showLoading(false)
+                val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
+                startActivity(intent)
             }
-
-        } catch (e: Exception) {
-            // Handle other non-coroutine exceptions here
-            showToast("Error: ${e.message}")
-            e.printStackTrace()
-            showLoading(false)
         }
     }
-
-
-//    private fun uploadImage() {
-//            val imageName = binding.photonameEd.text.toString().trim()
-//
-//            if (imageName.isEmpty()) {
-//                showToast(getString(R.string.empty_image_warning))
-//                return
-//            }
-//            showLoading(true)
-//            lifecycleScope.launch {
-//                val uid = auth.currentUser?.uid.toString()
-//
-//                val labelRequestBody = imageName.toRequestBody("text/plain".toMediaType())
-//                val image = (binding.imageView.drawable as BitmapDrawable).bitmap
-//
-//                val file = convertBitmapToFile(image).reduceFileImage()
-//                val requestFile = file.asRequestBody("multipart/form-data".toMediaType())
-//                val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
-//                Log.i("infoo", file.length().toString())
-//                val detectionTimestamp = System.currentTimeMillis().toString().toRequestBody("text/plain".toMediaType())
-//
-//                val apiService = ApiConfig.getApiService(uid)
-//
-//                try {
-//                    val response = apiService.uploadImage(uid, filePart, labelRequestBody, detectionTimestamp)
-//                    showToast("Image uploaded successfully. Response: ${response.message}")
-//                } catch (e: Exception) {
-//                    showToast("Error uploading image: ${e.message}")
-//                    Log.e("UploadImage", "Error uploading image", e)
-//                } finally {
-//                    showLoading(false)
-//                    val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
-//                    startActivity(intent)
-//                }
-//            }
-//        }
 
     private fun convertBitmapToFile(bitmap: Bitmap): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
@@ -150,7 +155,7 @@ class ImageDisplayActivity : AppCompatActivity() {
 
         try {
             val outputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
             outputStream.flush()
             outputStream.close()
         } catch (e: Exception) {
