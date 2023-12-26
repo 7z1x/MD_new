@@ -51,4 +51,7 @@
         <item name="android:windowEnterAnimation">@anim/slide_in_bottom</item>
         <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
     </style>
+
+    <color name="textColor">@color/black</color>
+    <color name="textColor1">@color/white</color>
 </resources>

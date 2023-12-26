@@ -12,12 +12,12 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CompoundButton
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import bangkit.project.fed.R
 import bangkit.project.fed.data.SharedViewModel
 import bangkit.project.fed.data.ViewModelFactory
@@ -25,8 +25,9 @@ import bangkit.project.fed.data.datastore.PreferencesDataStore
 import bangkit.project.fed.data.datastore.dataStore
 import bangkit.project.fed.databinding.FragmentSettingBinding
 import bangkit.project.fed.ui.login.LoginActivity
-import bangkit.project.fed.ui.setting.configureAccount.ConfigureAccountActivity
+import bangkit.project.fed.ui.setting.aboutus.AboutUs
 import bangkit.project.fed.ui.setting.configureprofile.ConfigureProfileActivity
+import bangkit.project.fed.ui.setting.privacypolicy.PrivacyPolicyActivity
 
 class SettingFragment : Fragment() {
 
@@ -43,7 +44,14 @@ class SettingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
+        val pref = PreferencesDataStore.getInstance(requireContext().applicationContext.dataStore)
+        val viewModelFactory = ViewModelFactory(pref)
+
+        settingViewModel = ViewModelProvider(this, viewModelFactory)[SettingViewModel::class.java]
+
+        sharedViewModel = ViewModelProvider(this, viewModelFactory)[SharedViewModel::class.java]
+
+        _binding = FragmentSettingBinding.inflate(inflater, container, false)
 
         sharedViewModel.selectedImageUri.observe(viewLifecycleOwner) { imageUri ->
             if (imageUri != null) {
@@ -53,10 +61,14 @@ class SettingFragment : Fragment() {
             }
         }
 
-        val pref = PreferencesDataStore.getInstance(requireContext().applicationContext.dataStore)
-        val viewModelFactory = ViewModelFactory(pref)
-        settingViewModel = ViewModelProvider(this, viewModelFactory)[SettingViewModel::class.java]
-        _binding = FragmentSettingBinding.inflate(inflater, container, false)
+        lifecycleScope.launchWhenStarted {
+            pref.getProfileImagePath().collect { imagePath ->
+                imagePath?.let {
+                    val imageUri = Uri.parse(it)
+                    sharedViewModel.setSelectedImageUri(imageUri)
+                }
+            }
+        }
 
         val language: Array<String> = resources.getStringArray(R.array.language_array)
         val arrayAdapter = ArrayAdapter(requireContext(), R.layout.dropdown_item, language)
@@ -123,10 +135,14 @@ class SettingFragment : Fragment() {
             startActivityForResult(intent, REQUEST_CODE_CONFIGURE_PROFILE)
         }
 
-        binding.buttonAccount.setOnClickListener{
-            val intent = Intent(activity, ConfigureAccountActivity::class.java)
-            @Suppress("DEPRECATION")
-            startActivityForResult(intent, REQUEST_CODE_CONFIGURE_ACCOUNT)
+        binding.buttonPrivacyPolicy.setOnClickListener {
+            val intent = Intent(activity, PrivacyPolicyActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.buttonAboutThisApp.setOnClickListener{
+            val intent = Intent(activity, AboutUs::class.java)
+            startActivity(intent)
         }
 
         settingViewModel.userName.observe(viewLifecycleOwner) { displayName ->
@@ -148,9 +164,6 @@ class SettingFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_CODE_CONFIGURE_PROFILE && resultCode == AppCompatActivity.RESULT_OK) {
-            updateUserData(data)
-        }
-        if (requestCode ==  REQUEST_CODE_CONFIGURE_ACCOUNT && resultCode == AppCompatActivity.RESULT_OK) {
             updateUserData(data)
         }
     }
@@ -197,12 +210,8 @@ class SettingFragment : Fragment() {
         }
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-    }
 
     companion object {
         private const val REQUEST_CODE_CONFIGURE_PROFILE = 123
-        private const val REQUEST_CODE_CONFIGURE_ACCOUNT = 111
     }
 }

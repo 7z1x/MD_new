@@ -30,13 +30,13 @@
     </style>
 
     <style name="BlackButtonBackground" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/md_theme_dark_background</item>
+        <item name="backgroundTint">@color/md_theme_dark_onSecondaryContainer</item>
 
     </style>
 
     <style name="TransparentButtonBackground" parent="Widget.MaterialComponents.Button">
         <item name="android:background">@drawable/roundedcornerwithstroke</item>
-        <item name="backgroundTint">@color/md_theme_dark_background</item>
+        <item name="backgroundTint">@color/md_theme_dark_onSecondaryContainer</item>
     </style>
 
     <style name="RobotoTextViewStyle" parent="android:Widget.TextView">
@@ -51,4 +51,7 @@
         <item name="android:windowEnterAnimation">@anim/slide_in_bottom</item>
         <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
     </style>
+
+    <color name="textColor">@color/white</color>
+    <color name="textColor1">@color/black</color>
 </resources>

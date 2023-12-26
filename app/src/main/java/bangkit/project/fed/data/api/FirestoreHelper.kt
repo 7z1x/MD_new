@@ -1,6 +1,7 @@
 package bangkit.project.fed.data.api
 
 import android.net.Uri
+import android.util.Log
 import bangkit.project.fed.data.EggData
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -45,7 +46,10 @@ class FirestoreHelper {
                     val eggData = document.toObject(EggData::class.java)
                     eggDataList.add(eggData)
                 }
+                Log.d("FirestoreHelper", "Received ${eggDataList.size} recent eggs for user $userId")
+                onComplete(eggDataList)
             }.addOnFailureListener {
+                Log.e("FirestoreHelper", "Error fetching recent eggs: $it")
                 onComplete(emptyList())
             }
     }
