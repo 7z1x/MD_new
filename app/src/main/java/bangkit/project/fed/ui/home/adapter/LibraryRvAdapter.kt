@@ -44,7 +44,7 @@ class LibraryRvAdapter(private val context: Context) :
                 .into(image)
 
             label.text = data.label
-            date.text = data.timestamp.toString()
+            date.text = data.timestamp?.toDate().toString()
             menu.setOnClickListener {
 
             }

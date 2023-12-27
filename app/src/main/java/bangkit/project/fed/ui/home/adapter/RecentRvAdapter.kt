@@ -46,7 +46,7 @@ class RecentRvAdapter(private val context: Context) :
                 .into(image)
 
             name.text = data.label
-            date.text = data.timestamp.toString()
+            date.text = data.timestamp?.toDate().toString()
         }
     }
 }
