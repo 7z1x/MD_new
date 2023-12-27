@@ -3,6 +3,7 @@ package bangkit.project.fed.data.api
 import android.net.Uri
 import android.util.Log
 import bangkit.project.fed.data.EggData
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
@@ -21,7 +22,7 @@ class FirestoreHelper {
 
     fun getDataEggByUserId(userId: String, onComplete: (List<EggData>) -> Unit) {
         eggDetectedCollection
-            .whereEqualTo("userId", userId)
+            .whereEqualTo("userId", "\"${userId}\"")
             .get()
             .addOnSuccessListener { documents ->
                 val eggDataList = mutableListOf<EggData>()
@@ -54,8 +55,10 @@ class FirestoreHelper {
             }
     }
 
+
+    //Backup jika API tidak sukses
     fun uploadDataEgg(
-        detectionTimestamp: String,
+        detectionTimestamp: Timestamp,
         fertilization: String,
         imageUrl: String,
         label: String,
@@ -63,7 +66,7 @@ class FirestoreHelper {
 
     ) {
         try {
-            val eggData = EggData("", userId, label, imageUrl, detectionTimestamp)
+            val eggData = EggData(emptyList(), userId, label, imageUrl, detectionTimestamp)
 
             eggDetectedCollection
                 .add(eggData)

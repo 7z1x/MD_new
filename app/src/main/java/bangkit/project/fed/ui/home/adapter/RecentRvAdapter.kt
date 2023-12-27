@@ -42,11 +42,11 @@ class RecentRvAdapter(private val context: Context) :
         val data = listEgg[position]
         holder.apply {
             Glide.with(context)
-                .load(data.imageUrl)
+                .load(data.imageURL)
                 .into(image)
 
             name.text = data.label
-            date.text = data.date
+            date.text = data.timestamp.toString()
         }
     }
 }
