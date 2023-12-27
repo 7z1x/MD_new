@@ -2,6 +2,7 @@ package bangkit.project.fed.data.api
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import bangkit.project.fed.data.EggData
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -52,6 +53,28 @@ class FirestoreHelper {
             }.addOnFailureListener {
                 Log.e("FirestoreHelper", "Error fetching recent eggs: $it")
                 onComplete(emptyList())
+            }
+    }
+
+    fun deleteData(label: String?, userId: String?, timestamp: Timestamp?, onComplete: () -> Unit) {
+        eggDetectedCollection
+            .whereEqualTo("label", label)
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("timestamp", timestamp)
+            .get().addOnSuccessListener {documents ->
+                for(document in documents){
+                    document.reference.delete()
+                        .addOnSuccessListener {
+                            Log.d("FirestoreHelper", "Success Delete Data")
+                            onComplete()
+                        }.addOnFailureListener {
+                            Log.e("FirestoreHelper", "Error delete Data: $it")
+                            onComplete()
+                        }
+                }
+            }.addOnFailureListener {
+                Log.e("FirestoreHelper", "Error Querying Document: $it")
+                onComplete
             }
     }
 

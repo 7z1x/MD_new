@@ -12,6 +12,7 @@ import bangkit.project.fed.databinding.FragmentHomeBinding
 import bangkit.project.fed.ui.home.adapter.LibraryRvAdapter
 import bangkit.project.fed.ui.home.adapter.RecentRvAdapter
 import com.google.firebase.auth.FirebaseAuth
+import okhttp3.internal.notifyAll
 
 class HomeFragment : Fragment() {
 
