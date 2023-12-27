@@ -23,7 +23,7 @@ class FirestoreHelper {
 
     fun getDataEggByUserId(userId: String?, onComplete: (List<EggData>) -> Unit) {
         eggDetectedCollection
-            .whereEqualTo("userId", "\"${userId}\"")
+            .whereEqualTo("userId", userId)
             .get()
             .addOnSuccessListener { documents ->
                 val eggDataList = mutableListOf<EggData>()
@@ -38,15 +38,21 @@ class FirestoreHelper {
             }
     }
 
-    fun getDataEggByRecentDate(userId: String?, onComplete: (List<EggData>) -> Unit){
+    fun getDataEggByRecentDate(userId: String?, onComplete: (List<EggData>) -> Unit) {
         eggDetectedCollection
             .whereEqualTo("userId", userId)
-            .orderBy("date", Query.Direction.DESCENDING)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 val eggDataList = mutableListOf<EggData>()
                 for (document in documents) {
-                    val eggData = document.toObject(EggData::class.java)
+                    val data = document.data
+                    val timestamp = (data["timestamp"] as Timestamp)  // Convert Timestamp to Date
+                    val eggData = EggData(
+                        // Assuming you have other properties in EggData class
+                        timestamp = timestamp,
+                        // Populate other properties accordingly
+                    )
                     eggDataList.add(eggData)
                 }
                 Log.d("FirestoreHelper", "Received ${eggDataList.size} recent eggs for user $userId")
