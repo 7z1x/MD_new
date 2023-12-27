@@ -21,7 +21,7 @@ class FirestoreHelper {
     private val eggDetectedCollection = firestore.collection("Egg-detected")
     private val storageReference: StorageReference = FirebaseStorage.getInstance().reference
 
-    fun getDataEggByUserId(userId: String, onComplete: (List<EggData>) -> Unit) {
+    fun getDataEggByUserId(userId: String?, onComplete: (List<EggData>) -> Unit) {
         eggDetectedCollection
             .whereEqualTo("userId", "\"${userId}\"")
             .get()
@@ -33,6 +33,7 @@ class FirestoreHelper {
                 }
                 onComplete(eggDataList)
             }.addOnFailureListener { exception ->
+                Log.e("FirestoreHelper", "Error fetching eggs: ${exception.message}", exception)
                 onComplete(emptyList())
             }
     }

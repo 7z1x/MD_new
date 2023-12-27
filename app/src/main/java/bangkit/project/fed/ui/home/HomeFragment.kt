@@ -8,11 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import bangkit.project.fed.data.EggData
+import bangkit.project.fed.data.api.FirestoreHelper
 import bangkit.project.fed.databinding.FragmentHomeBinding
 import bangkit.project.fed.ui.home.adapter.LibraryRvAdapter
 import bangkit.project.fed.ui.home.adapter.RecentRvAdapter
 import com.google.firebase.auth.FirebaseAuth
-import okhttp3.internal.notifyAll
 
 class HomeFragment : Fragment() {
 
@@ -23,6 +24,7 @@ class HomeFragment : Fragment() {
     private lateinit var viewModel: HomeViewModel
     private lateinit var libraryAdapter: LibraryRvAdapter
     private lateinit var recentAdapter: RecentRvAdapter
+    private lateinit var eggList : List<EggData>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +63,9 @@ class HomeFragment : Fragment() {
 
     private fun getLibraryList() {
 
+        val auth = FirebaseAuth.getInstance()
+        val uid = auth.currentUser?.uid
+
         val currentUser = auth.currentUser
         currentUser?.uid?.let { userId ->
             viewModel.fetchEggDataByUserId(userId)
@@ -70,11 +75,11 @@ class HomeFragment : Fragment() {
         binding.LibraryRv.adapter = libraryAdapter
         binding.LibraryRv.layoutManager = LinearLayoutManager(requireContext())
 
-        viewModel.eggDataList.observe(viewLifecycleOwner) { eggDataList ->
-            Log.i("HomeFragment" + " " + "MUNCUL NIH", "Recent List Size: ${eggDataList.size}")
+        val firestoreHelper = FirestoreHelper()
+        firestoreHelper.getDataEggByUserId(uid) {eggDataList ->
             libraryAdapter.submitList(eggDataList)
         }
-
+        libraryAdapter.notifyDataSetChanged()
     }
 
     override fun onDestroyView() {

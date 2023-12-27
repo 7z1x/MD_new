@@ -1,11 +1,14 @@
 package bangkit.project.fed.ui.captureegg.camera
 
+import android.content.Context
 import android.content.Intent
+import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
@@ -13,6 +16,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.FileProvider
 import bangkit.project.fed.R
 import bangkit.project.fed.databinding.FragmentCameraBinding
@@ -22,10 +26,12 @@ import java.io.File
 import java.util.concurrent.Executors
 
 class CameraFragment : Fragment() {
-    private var _binding : FragmentCameraBinding? = null
+    private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
     private lateinit var imageCapture: ImageCapture
     private lateinit var preview: Preview
+    var isFlash = false
+    private lateinit var cameraManager: CameraManager
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
 
     override fun onCreateView(
@@ -33,11 +39,13 @@ class CameraFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentCameraBinding.inflate(inflater,container, false)
+        _binding = FragmentCameraBinding.inflate(inflater, container, false)
+
+        cameraManager = requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
 
         binding.flashlight.setOnClickListener {
-            toggleFlash()
+            toggleFlash(it)
         }
 
         binding.capture.setOnClickListener {
@@ -49,7 +57,19 @@ class CameraFragment : Fragment() {
         return binding.root
     }
 
-    private fun toggleFlash() {
+    private fun toggleFlash(v : View) {
+        if(!isFlash) {
+            val cameraId = cameraManager.cameraIdList[0]
+            cameraManager.setTorchMode(cameraId, true)
+            isFlash = true
+        } else if (isFlash) {
+            val cameraId = cameraManager.cameraIdList[0]
+            cameraManager.setTorchMode(cameraId, false)
+            isFlash = false
+        } else {
+            Toast.makeText(requireContext(), "Flash Not Supported", Toast.LENGTH_SHORT).show()
+        }
+
 
     }
 
@@ -62,7 +82,11 @@ class CameraFragment : Fragment() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val mImageUri =
-                        FileProvider.getUriForFile(requireContext(), "bangkit.project.fed.provider", photoFile)
+                        FileProvider.getUriForFile(
+                            requireContext(),
+                            "bangkit.project.fed.provider",
+                            photoFile
+                        )
                     val intent = Intent(requireContext(), ImageDisplayActivity::class.java)
                     intent.putExtra("capturedImage", mImageUri)
                     startActivity(intent)
