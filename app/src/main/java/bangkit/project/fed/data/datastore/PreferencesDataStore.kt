@@ -17,6 +17,7 @@ class PreferencesDataStore private constructor(private val dataStore: DataStore<
 
     private val THEME_KEY = booleanPreferencesKey("theme_setting")
     private val LOCALE_KEY = stringPreferencesKey("local")
+    private val PROFILE_IMAGE_PATH_KEY = stringPreferencesKey("profile_image_path")
 
     fun getThemeSetting() : Flow<Boolean> {
         return dataStore.data.map { preferences ->
@@ -42,6 +43,18 @@ class PreferencesDataStore private constructor(private val dataStore: DataStore<
         }
     }
 
+    suspend fun saveProfileImagePath(path: String) {
+        dataStore.edit { preferences ->
+            preferences[PROFILE_IMAGE_PATH_KEY] = path
+        }
+    }
+
+    fun getProfileImagePath(): Flow<String?> {
+        return dataStore.data.map { preferences ->
+            preferences[PROFILE_IMAGE_PATH_KEY]
+        }
+    }
+
     companion object{
         @Volatile
         private var INSTANCE: PreferencesDataStore? = null
@@ -53,6 +66,7 @@ class PreferencesDataStore private constructor(private val dataStore: DataStore<
                 instance
             }
         }
+
     }
 
 }

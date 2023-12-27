@@ -13,6 +13,9 @@ class ViewModelFactory(private val pref:PreferencesDataStore) : ViewModelProvide
             modelClass.isAssignableFrom(SettingViewModel::class.java) -> {
                 SettingViewModel(pref) as T
             }
+            modelClass.isAssignableFrom(SharedViewModel::class.java) -> {
+                SharedViewModel(pref) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel Class: " + modelClass.name)
         }
     }

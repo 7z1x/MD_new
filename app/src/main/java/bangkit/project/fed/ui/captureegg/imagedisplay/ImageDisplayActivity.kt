@@ -2,7 +2,6 @@ package bangkit.project.fed.ui.captureegg.imagedisplay
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -16,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import bangkit.project.fed.MainActivity
 import bangkit.project.fed.R
 import bangkit.project.fed.data.api.ApiConfig
-import bangkit.project.fed.data.api.FirestoreHelper
 import bangkit.project.fed.databinding.ActivityImageDisplayBinding
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -24,8 +22,6 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -121,7 +117,7 @@ class ImageDisplayActivity : AppCompatActivity() {
             val image = (binding.imageView.drawable as BitmapDrawable).bitmap
             val file = convertBitmapToFile(image)
             val requestFile = file.asRequestBody("multipart/form-data".toMediaType())
-            val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            val filePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
             Log.i("infoo", file.length().toString())
             val detectionTimestamp = System.currentTimeMillis()
             val formattedTimestamp = formatDate(detectionTimestamp)
@@ -130,7 +126,7 @@ class ImageDisplayActivity : AppCompatActivity() {
             val apiService = ApiConfig.getApiService(uid)
 
             try {
-                apiService.uploadImagetoDetect(filePart, imageName, uid)
+                apiService.uploadImagetoDetect(filePart, imageName, uid, formattedTimestamp)
                 showToast("Image uploaded successfully.")
 
                 val intent = Intent(this@ImageDisplayActivity, MainActivity::class.java)
@@ -164,22 +160,22 @@ class ImageDisplayActivity : AppCompatActivity() {
 
         return file
     }
-
-    private fun File.reduceFileImage(): File {
-        val file = this
-        val bitmap = BitmapFactory.decodeFile(file.path)
-        var compressQuality = 100
-        var streamLength: Int
-        do {
-            val bmpStream = ByteArrayOutputStream()
-            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
-            val bmpPicByteArray = bmpStream.toByteArray()
-            streamLength = bmpPicByteArray.size
-            compressQuality -= 5
-        } while (streamLength > MAXIMAL_SIZE)
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
-        return file
-    }
+//
+//    private fun File.reduceFileImage(): File {
+//        val file = this
+//        val bitmap = BitmapFactory.decodeFile(file.path)
+//        var compressQuality = 100
+//        var streamLength: Int
+//        do {
+//            val bmpStream = ByteArrayOutputStream()
+//            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
+//            val bmpPicByteArray = bmpStream.toByteArray()
+//            streamLength = bmpPicByteArray.size
+//            compressQuality -= 5
+//        } while (streamLength > MAXIMAL_SIZE)
+//        bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
+//        return file
+//    }
 
 
     private fun getImage() {

@@ -83,5 +83,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-
+    implementation("com.google.firebase:firebase-appcheck-debug:17.1.1")
+    implementation("com.google.firebase:firebase-appcheck:17.1.1")
+    implementation("com.google.firebase:firebase-appcheck-safetynet:16.1.2")
+    platform("com.google.firebase:firebase-bom:32.7.0")
 }

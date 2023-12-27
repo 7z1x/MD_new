@@ -1,6 +1,7 @@
 package bangkit.project.fed.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,6 +51,7 @@ class HomeFragment : Fragment() {
         binding.recentRv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
         viewModel.eggDataList.observe(viewLifecycleOwner) {eggDataList ->
+            Log.i("HomeFragment" + "MUNCUL NIH", "Recent List Size: ${eggDataList.size}")
             recentAdapter.submitList(eggDataList)
         }
 
@@ -68,6 +70,7 @@ class HomeFragment : Fragment() {
         binding.LibraryRv.layoutManager = LinearLayoutManager(requireContext())
 
         viewModel.eggDataList.observe(viewLifecycleOwner) { eggDataList ->
+            Log.i("HomeFragment" + " " + "MUNCUL NIH", "Recent List Size: ${eggDataList.size}")
             libraryAdapter.submitList(eggDataList)
         }
 
