@@ -31,6 +31,7 @@ class RealtimeFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var imageCapture: ImageCapture
     private lateinit var preview: Preview
+    private var isFlashEnabled = false
     private lateinit var imageClassifierHelper: ImageClassifierHelper
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
 
@@ -55,10 +56,28 @@ class RealtimeFragment : Fragment() {
     }
 
     private fun toggleFlash() {
+        isFlashEnabled = !isFlashEnabled
 
+        val flashMode = if (isFlashEnabled) {
+            ImageCapture.FLASH_MODE_ON
+        } else {
+            ImageCapture.FLASH_MODE_OFF
+        }
 
+        updateFlashLightIcon()
+
+        imageCapture.flashMode = flashMode
     }
 
+    private fun updateFlashLightIcon() {
+        val flashlightIconResource = if (isFlashEnabled) {
+            R.drawable.flash_on // Resource for the flashlight icon when it's enabled
+        } else {
+            R.drawable.flash_off // Resource for the flashlight icon when it's disabled
+        }
+
+        binding.flashlight.setImageResource(flashlightIconResource)
+    }
     private fun startCameraCapture() {
 
         imageClassifierHelper =

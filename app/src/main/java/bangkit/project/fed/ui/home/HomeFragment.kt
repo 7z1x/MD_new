@@ -44,6 +44,9 @@ class HomeFragment : Fragment() {
 
     private fun getRecentList() {
 
+        val auth = FirebaseAuth.getInstance()
+        val uid = auth.currentUser?.uid
+
         val currentUser = auth.currentUser
         currentUser?.uid?.let {
             viewModel.fetchEggDataByRecentDate(it)
@@ -53,11 +56,12 @@ class HomeFragment : Fragment() {
         binding.recentRv.adapter = recentAdapter
         binding.recentRv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
-        viewModel.eggDataList.observe(viewLifecycleOwner) {eggDataList ->
-            Log.i("HomeFragment" + "MUNCUL NIH", "Recent List Size: ${eggDataList.size}")
-            recentAdapter.submitList(eggDataList)
+        val firestoreHelper = FirestoreHelper()
+        firestoreHelper.getDataEggByRecentDate(uid) {eggdataList ->
+            val limitedList = eggdataList.take(3)
+            recentAdapter.submitList(limitedList)
         }
-
+        recentAdapter.notifyDataSetChanged()
 
     }
 
@@ -65,11 +69,6 @@ class HomeFragment : Fragment() {
 
         val auth = FirebaseAuth.getInstance()
         val uid = auth.currentUser?.uid
-
-        val currentUser = auth.currentUser
-        currentUser?.uid?.let { userId ->
-            viewModel.fetchEggDataByUserId(userId)
-        }
 
         libraryAdapter = LibraryRvAdapter(requireContext())
         binding.LibraryRv.adapter = libraryAdapter

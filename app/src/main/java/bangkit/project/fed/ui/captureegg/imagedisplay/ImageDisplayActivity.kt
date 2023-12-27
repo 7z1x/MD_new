@@ -2,6 +2,7 @@ package bangkit.project.fed.ui.captureegg.imagedisplay
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -116,7 +118,8 @@ class ImageDisplayActivity : AppCompatActivity() {
 
             val image = (binding.imageView.drawable as BitmapDrawable).bitmap
             val file = convertBitmapToFile(image)
-            val requestFile = file.asRequestBody("multipart/form-data".toMediaType())
+            val reducedFile = file.reduceFileImage()
+            val requestFile = reducedFile.asRequestBody("multipart/form-data".toMediaType())
             val filePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
             Log.i("infoo", file.length().toString())
             val detectionTimestamp = System.currentTimeMillis()
@@ -160,22 +163,22 @@ class ImageDisplayActivity : AppCompatActivity() {
 
         return file
     }
-//
-//    private fun File.reduceFileImage(): File {
-//        val file = this
-//        val bitmap = BitmapFactory.decodeFile(file.path)
-//        var compressQuality = 100
-//        var streamLength: Int
-//        do {
-//            val bmpStream = ByteArrayOutputStream()
-//            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
-//            val bmpPicByteArray = bmpStream.toByteArray()
-//            streamLength = bmpPicByteArray.size
-//            compressQuality -= 5
-//        } while (streamLength > MAXIMAL_SIZE)
-//        bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
-//        return file
-//    }
+
+    private fun File.reduceFileImage(): File {
+        val file = this
+        val bitmap = BitmapFactory.decodeFile(file.path)
+        var compressQuality = 100
+        var streamLength: Int
+        do {
+            val bmpStream = ByteArrayOutputStream()
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
+            val bmpPicByteArray = bmpStream.toByteArray()
+            streamLength = bmpPicByteArray.size
+            compressQuality -= 5
+        } while (streamLength > MAXIMAL_SIZE)
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
+        return file
+    }
 
 
     private fun getImage() {

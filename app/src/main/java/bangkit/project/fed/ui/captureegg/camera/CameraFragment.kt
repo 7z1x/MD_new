@@ -2,6 +2,8 @@ package bangkit.project.fed.ui.captureegg.camera
 
 import android.content.Context
 import android.content.Intent
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -30,8 +32,7 @@ class CameraFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var imageCapture: ImageCapture
     private lateinit var preview: Preview
-    var isFlash = false
-    private lateinit var cameraManager: CameraManager
+    private var isFlashEnabled = false
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
 
     override fun onCreateView(
@@ -41,11 +42,8 @@ class CameraFragment : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
 
-        cameraManager = requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
-
-
         binding.flashlight.setOnClickListener {
-            toggleFlash(it)
+            toggleFlash()
         }
 
         binding.capture.setOnClickListener {
@@ -57,20 +55,28 @@ class CameraFragment : Fragment() {
         return binding.root
     }
 
-    private fun toggleFlash(v : View) {
-        if(!isFlash) {
-            val cameraId = cameraManager.cameraIdList[0]
-            cameraManager.setTorchMode(cameraId, true)
-            isFlash = true
-        } else if (isFlash) {
-            val cameraId = cameraManager.cameraIdList[0]
-            cameraManager.setTorchMode(cameraId, false)
-            isFlash = false
+    private fun toggleFlash() {
+        isFlashEnabled = !isFlashEnabled
+
+        val flashMode = if (isFlashEnabled) {
+            ImageCapture.FLASH_MODE_ON
         } else {
-            Toast.makeText(requireContext(), "Flash Not Supported", Toast.LENGTH_SHORT).show()
+            ImageCapture.FLASH_MODE_OFF
         }
 
+        updateFlashLightIcon()
 
+        imageCapture.flashMode = flashMode
+    }
+
+    private fun updateFlashLightIcon() {
+        val flashlightIconResource = if (isFlashEnabled) {
+            R.drawable.flash_on // Resource for the flashlight icon when it's enabled
+        } else {
+            R.drawable.flash_off // Resource for the flashlight icon when it's disabled
+        }
+
+        binding.flashlight.setImageResource(flashlightIconResource)
     }
 
     private fun takePicture() {

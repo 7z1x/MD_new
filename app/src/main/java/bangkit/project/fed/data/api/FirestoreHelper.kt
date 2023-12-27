@@ -38,7 +38,7 @@ class FirestoreHelper {
             }
     }
 
-    fun getDataEggByRecentDate(userId: String, onComplete: (List<EggData>) -> Unit){
+    fun getDataEggByRecentDate(userId: String?, onComplete: (List<EggData>) -> Unit){
         eggDetectedCollection
             .whereEqualTo("userId", userId)
             .orderBy("date", Query.Direction.DESCENDING)
